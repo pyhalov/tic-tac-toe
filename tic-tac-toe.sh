@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -r board
-
 MAX_LEVEL=5
 
 NONE=0
@@ -101,28 +99,29 @@ calc_move() {
    shift
    b=("$@")
 
+   if [ $level -eq $MAX_LEVEL ]; then
+      echo "Reached $MAX_LEVEL. Considering score being 0" >&2
+      echo "0"
+      return;
+   fi
+
    echo "working on board" >&2
    print_board "${b[@]}" >&2
    echo "level=$level" >&2
 
    move=-1
    score=-2
-   if [ $pl -eq $OPPONENT ]; then
-     score=-2
-   else
-     score=2
-   fi
 
    r=`check_result ${b[@]}`
    opponent=`get_opponent $pl`
    echo "player=$pl opponent=$opponent" >&2
-   if [ $r -eq $WE ]; then
-      echo "1";
-      echo "returned 1" >&2
+   if [ \( $r -eq $WE_WIN \) -o \( $r -eq $OPPONENT_WINS \) ]; then
+      echo $(($r * $pl))
+      echo "$(($r * $pl))" >&2
       return;
-   elif [ $r -eq $OPPONENT ]; then
-      echo "-1";
-      echo "returned -1" >&2
+   elif [ $r -eq $DRAW ]; then
+      echo "0";
+      echo "returned 0" >&2
       return;
    fi
 
@@ -134,35 +133,18 @@ calc_move() {
           echo "b[$i]=${b[$i]}" >&2
           l=$((level+1))
           echo "move=$i l=$l">&2
-          if [ $l -lt $MAX_LEVEL ]; then
-            cm=`calc_move $opponent $l ${bm[@]} | cut -d \; -f 1 `
-            echo "Returned to board, checking move $i ">&2
-            print_board "${b[@]}" >&2
+          cm=`calc_move $opponent $l ${bm[@]} | cut -d \; -f 1 `
+          echo "Returned to board, checking move $i ">&2
+          print_board "${b[@]}" >&2
             
-            #mscore=$((-$cm))
-            mscore=$(($cm))
-          else 
-            mscore=0
-          fi
+          mscore=$((-$cm))
           echo "move=$i score=$mscore">&2
-          if [ $pl -eq $OPPONENT ]; then
-            if [ $mscore -gt  $score ]; then
-               score=$mscore;
-               move=$i
-            fi
-          else
-            if [ $mscore -lt  $score ]; then
-               score=$mscore;
-               move=$i
-            fi
+          if [ $mscore -gt  $score ]; then
+              score=$mscore;
+              move=$i
           fi
       fi
    done
-
-   if [ $move -eq -1 ]; then 
-   # No moves
-      score=0;
-   fi
 
    echo "returned $score;$move" >&2
    echo "$score;$move"
@@ -178,9 +160,7 @@ validate_input() {
    return 1;
 }
 
-#a=( 0 0 0 0 0 0 0 0 0 )
 a=( 0 0 0 0 0 0 0 0 0 )
-#a=( -1 0 0 -1 0 0 0 0 0 )
 
 w=$NOT_OVER
 while [ $w -eq $NOT_OVER ]; do 
