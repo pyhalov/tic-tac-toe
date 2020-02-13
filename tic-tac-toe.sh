@@ -14,7 +14,6 @@ NOT_OVER=2
 check_result() {
    b=("$@")
    
-   logger -p error "b[0]=${b[0]}"
    if [ \( ${b[0]} -eq ${b[1]} \)  -a \( ${b[1]} -eq ${b[2]} \) -a \( ${b[0]} -ne $NONE \) ] ; then echo ${b[0]};
    elif [ \( ${b[0]} -eq ${b[3]} \)  -a \( ${b[3]} -eq ${b[6]} \) -a \( ${b[0]} -ne $NONE \) ] ; then echo ${b[0]};
    elif [ \( ${b[6]} -eq ${b[7]} \)  -a \( ${b[7]} -eq ${b[8]} \) -a \( ${b[6]} -ne $NONE \) ] ; then echo ${b[6]}; 
